@@ -172,10 +172,10 @@ HOME_TEMPLATE = """
 
         .page-list {
             max-width: 800px;
-            margin: 20px auto;
+            margin: 20px auto 10px;  /* alt margin'i azalttım */
             padding: 20px;
             background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
+            border-radius: 10px 10px 0 0;  /* alt köşeleri düz yaptım */
             columns: 4;
             column-gap: 20px;
         }
@@ -187,11 +187,72 @@ HOME_TEMPLATE = """
             padding: 5px;
             margin: 2px 0;
             text-align: center;
+            position: relative;
         }
 
         .page-list a:hover {
             background: #f0f0f0;
             border-radius: 5px;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .status-dot.available {
+            background-color: #4CAF50;
+        }
+
+        .status-dot.unavailable {
+            background-color: #f44336;
+        }
+
+        .update-section {
+            max-width: 800px;
+            margin: 0 auto 20px;  /* üst margin'i 0 yaptım */
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 0 0 10px 10px;  /* üst köşeleri düz yaptım */
+            text-align: center;
+        }
+
+        .update-button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            text-decoration: none;
+            color: #000;
+            cursor: pointer;
+            border: none;
+        }
+
+        .update-button:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+
+        #updateStatus {
+            text-align: center;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: rgba(76, 175, 80, 0.9);
+            color: white;
+        }
+
+        .error {
+            background-color: rgba(255, 0, 0, 0.9);
+            color: white;
         }
 
         @media (max-width: 576px) {
@@ -208,9 +269,53 @@ HOME_TEMPLATE = """
 
     <div class="page-list">
         {% for i in range(1, 606) %}
-            <a href="/{{ '%03d' % i }}">{{ '%03d' % i }}</a>
+            {% set page_num = '%03d' % i %}
+            <a href="/{{ page_num }}">
+                {{ page_num }}
+                <span class="status-dot {{ 'available' if page_num in file_cache else 'unavailable' }}"></span>
+            </a>
         {% endfor %}
     </div>
+
+    <div class="update-section">
+        <button onclick="updateCache()" class="update-button">Ses Listesini Güncelle</button>
+        <div id="updateStatus" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function updateCache() {
+            const button = document.querySelector('.update-button');
+            const status = document.getElementById('updateStatus');
+            
+            // Buton ve durum mesajını güncelle
+            button.disabled = true;
+            button.textContent = 'Güncelleniyor...';
+            status.style.display = 'block';
+            status.textContent = 'Ses dosyaları listesi güncelleniyor...';
+            status.className = '';
+            
+            try {
+                const response = await fetch('/update-cache');
+                const result = await response.json();
+                
+                status.textContent = result.message;
+                status.className = result.success ? 'success' : 'error';
+                
+                // Güncelleme başarılı olduysa sayfayı yenile
+                if (result.success) {
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            } catch (error) {
+                status.textContent = 'Güncelleme sırasında bir hata oluştu!';
+                status.className = 'error';
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Ses Listesini Güncelle';
+            }
+        }
+    </script>
 </body>
 </html>
 """
@@ -310,7 +415,7 @@ PAGE_TEMPLATE = """
 
 @app.route("/")
 def home():
-    return render_template_string(HOME_TEMPLATE)
+    return render_template_string(HOME_TEMPLATE, file_cache=file_cache)
 
 @app.route("/<string:page>")
 def show_page(page):
@@ -384,6 +489,17 @@ def serve_audio(page):
         update_cache_background()
         
         return "Ses dosyası servis edilirken bir hata oluştu", 500
+
+@app.route('/update-cache')
+def update_cache():
+    """Cache'i manuel olarak güncellemek için endpoint"""
+    try:
+        if list_files_in_drive_folder():
+            return {"success": True, "message": "Ses dosyaları listesi başarıyla güncellendi!"}
+        return {"success": False, "message": "Güncelleme sırasında bir hata oluştu."}, 500
+    except Exception as e:
+        print(f"Cache güncellenirken hata: {e}")
+        return {"success": False, "message": f"Beklenmeyen bir hata oluştu: {str(e)}"}, 500
 
 @app.route('/favicon.ico')
 def favicon():
