@@ -1,0 +1,35 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# https://claude.ai/chat/7e6aae13-e9bd-4d5a-bc9b-80e5787ed7a5
+# Özel dosya türü davranışları
+*.txt text
+*.md text
+*.json text
+*.xml text
+*.yml text
+*.yaml text
+
+# Kod dosyaları
+*.c text diff=c
+*.h text diff=c
+*.cpp text diff=cpp
+*.hpp text diff=cpp
+*.java text diff=java
+*.py text diff=python
+*.js text
+*.ts text
+*.html text diff=html
+*.css text diff=css
+*.scss text diff=css
+
+# Binary dosyalar
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.pdf binary
+*.jar binary
+*.exe binary
