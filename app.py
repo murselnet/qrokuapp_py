@@ -9,28 +9,41 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from google.oauth2 import service_account
 import requests
+from dotenv import load_dotenv
+
+# .env dosyasını yükle
+load_dotenv()
 
 # Google Drive klasör ID'si
-DRIVE_FOLDER_ID = "199FGGEFrOOIKg6edCF7GKNZvKRKHRgGg"
+DRIVE_FOLDER_ID = os.getenv('DRIVE_FOLDER_ID', "199FGGEFrOOIKg6edCF7GKNZvKRKHRgGg")
 app = Flask(__name__)
 
+# Uygulama yapılandırması
+app.config.update(
+    SECRET_KEY=os.getenv('SECRET_KEY', os.urandom(24)),
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024  # Max 16MB dosya boyutu
+)
+
 # Kendi dosya önbellek sistemi
-CACHE_FILE = os.path.join(os.path.dirname(__file__), 'drive_file_cache.json')
+CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'drive_file_cache.json')
+CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cache')
 file_cache = {}
 cache_lock = threading.Lock()
 last_cache_update = 0
 CACHE_TTL = 24 * 60 * 60  # 24 saat cache geçerlilik süresi
 
+# Cache dizinini oluştur
+if not os.path.exists(CACHE_DIR):
+    os.makedirs(CACHE_DIR)
+
 # Google Drive API için kimlik doğrulama
 def get_drive_service():
     try:
-        # Eğer service account credentials dosyanız varsa:
-        # CREDENTIALS_FILE = 'credentials.json'  # Google Cloud Console'dan indirilen kimlik dosyası
-        # creds = service_account.Credentials.from_service_account_file(CREDENTIALS_FILE)
-        # service = build('drive', 'v3', credentials=creds)
-        
-        # API key kullanarak basit erişim (yalnızca herkese açık dosyalar için)
-        API_KEY = os.environ.get('GOOGLE_API_KEY', '')  # API anahtarınızı çevre değişkenlerinden alın
+        API_KEY = os.getenv('GOOGLE_API_KEY', '')
+        if not API_KEY:
+            print("UYARI: GOOGLE_API_KEY bulunamadı!")
+            return None
+            
         service = build('drive', 'v3', developerKey=API_KEY)
         return service
     except Exception as e:

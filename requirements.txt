@@ -3,3 +3,5 @@ google-api-python-client==2.169.0
 google-auth==2.39.0
 requests==2.32.3
 python-dotenv==1.1.0
+gunicorn==21.2.0
+gevent==24.2.1
