@@ -15,7 +15,7 @@ DRIVE_FOLDER_ID = "199FGGEFrOOIKg6edCF7GKNZvKRKHRgGg"
 app = Flask(__name__)
 
 # Kendi dosya önbellek sistemi
-CACHE_FILE = "drive_file_cache.json"
+CACHE_FILE = os.path.join(os.path.dirname(__file__), 'drive_file_cache.json')
 file_cache = {}
 cache_lock = threading.Lock()
 last_cache_update = 0
