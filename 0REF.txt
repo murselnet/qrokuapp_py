@@ -1,0 +1,51 @@
+FastAPI
+uvicorn
+https://oku.mursel.net
+
+
+MEVCUT DÜZEN
+http://www.kurandinliyorum.com/k/c1/000.mp3 > qr okunan
+https://qrkodkuran.com/s/001 > link
+http://qrkodkuran.com/sesler/001_sau.mp3 > mp3
+
+
+https://qrkodkuran.com/s/001 > http://qrkodkuran.com/sesler/001_sau.mp3 
+https://qrkodkuran.com/s/002 > http://qrkodkuran.com/sesler/002_sau.mp3
+...
+https://qrkodkuran.com/s/605 > http://qrkodkuran.com/sesler/605_sau.mp3
+
+Örnek: "http://www.kurandinliyorum.com/k/c1/000.mp3" > "mursel.net/001.mp3" şekline döniştürülsün
+if (filename == "000.mp3") {
+            newFilename = "001.mp3";
+          }
+
+          newLink = "https://oku.mursel.net/$newFilename";
+
+
+https://drive.google.com/drive/folders/199FGGEFrOOIKg6edCF7GKNZvKRKHRgGg
+
+
+şimdilik 36 adet var
+001_sau.mp3
+...
+605_sau.mp3
+
+Python ile FastAPI, uvicorn ve diğer gerekli paketler ile bir backend uygulaması yazmanı istiyorum.
+Uygulama https://oku.mursel.net subdomainde hizmet verecek.
+Örnek istek  https://oku.mursel.net/001.mp3 şeklinde olacak.
+Bu gelen istek ile Google Drive da publik olarak internete açık olan
+https://drive.google.com/drive/folders/199FGGEFrOOIKg6edCF7GKNZvKRKHRgGg
+adresindeki mp3 dosyaları bir audio player ile çalıştırılacak
+drive da bulunan dosyaların isimleri 001_sau.mp3 (605 adet olacak 001 den 605 e kadar) şelinde bulunmakta
+yani https://oku.mursel.net/001.mp3 isteği geldiğinde 001_sau.mp3 dosyası sayfadakii audio playerada çalınabilir vaziyoyye olacak
+
+Senden bu sayfayı main.py dosyası içinde hazırlamanı istiyorum. kodlamnın hatasız ve stabil ve istdeiğim
+özellikte olmasına en az %95 oranında emin olduktan sonra kodlamayı yapmanı istiyorum.
+
+
+
+
+
+
+
+
