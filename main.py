@@ -22,6 +22,63 @@ app.add_middleware(
 DRIVE_FOLDER_ID = "199FGGEFrOOIKg6edCF7GKNZvKRKHRgGg"
 MAX_FILE_NUMBER = 605
 
+# HTML template for the welcome page
+WELCOME_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qroku Audio Player - Hoşgeldiniz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            text-align: center;
+        }
+        .welcome-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px 20px;
+            margin-top: 50px;
+        }
+        h1 {
+            color: #333;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <h1>Hoşgeldiniz</h1>
+        <a href="/001.mp3" class="btn">Dinlemeye Başla</a>
+    </div>
+</body>
+</html>
+"""
+
 # HTML template for the audio player
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -81,6 +138,15 @@ HTML_TEMPLATE = """
             margin-top: 10px;
             color: #666;
         }
+        .home-link {
+            display: block;
+            margin-top: 20px;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .home-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -97,6 +163,7 @@ HTML_TEMPLATE = """
             <a href="/{prev_file}.mp3" class="btn" {prev_disabled}>Previous</a>
             <a href="/{next_file}.mp3" class="btn" {next_disabled}>Next</a>
         </div>
+        <a href="/" class="home-link">Ana Sayfaya Dön</a>
     </div>
 </body>
 </html>
@@ -147,8 +214,8 @@ async def get_file_download_url(file_name: str) -> str:
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    """Redirect to the first audio file"""
-    return HTMLResponse(content=f'<script>window.location.href = "/001.mp3";</script>')
+    """Serve the welcome page"""
+    return HTMLResponse(content=WELCOME_TEMPLATE)
 
 
 @app.get("/{file_number}.mp3", response_class=HTMLResponse)

@@ -8,6 +8,7 @@ A FastAPI application that serves MP3 files from Google Drive with a web-based a
 - Clean and modern audio player interface
 - Navigation between audio files
 - Responsive design
+- Welcome page
 
 ## Requirements
 
@@ -52,7 +53,7 @@ A FastAPI application that serves MP3 files from Google Drive with a web-based a
 
 ## API Endpoints
 
-- `GET /`: Redirects to the first audio file
+- `GET /`: Displays a welcome page with a link to start listening
 - `GET /{file_number}.mp3`: Serves the HTML page with the audio player for the specified file
 - `GET /stream/{file_number}.mp3`: Streams the audio file directly from Google Drive
 
