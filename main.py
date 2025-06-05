@@ -33,6 +33,10 @@ BASE_URL = "https://repo.mursel.net/oku"
 
 # Available MP3 files list
 MP3_FILES = [f"{i:03d}_sau.mp3" for i in range(1, 606)]
+# Mapping numeric IDs to file names
+NUMERIC_TO_FILE = {f"{i:03d}": f"{i:03d}_sau.mp3" for i in range(1, 606)}
+# Mapping file names to numeric IDs
+FILE_TO_NUMERIC = {f"{i:03d}_sau.mp3": f"{i:03d}" for i in range(1, 606)}
 
 # HTML template for the welcome page with file list
 WELCOME_TEMPLATE = '''
@@ -273,22 +277,30 @@ HTML_TEMPLATE = '''
 async def root():
     """Serve the welcome page with file list"""
     file_links = ""
-    for file_name in MP3_FILES:
-        # Add a green dot for available files (all files are available in this case)
-        file_links += f'<a href="/{file_name}">{file_name}<span class="status-dot available"></span></a>\n'
+    for idx in range(1, 606):
+        numeric_id = f"{idx:03d}"
+        # Use numeric ID in the links instead of full file name
+        file_links += f'<a href="/{numeric_id}">{numeric_id}<span class="status-dot available"></span></a>\n'
     
     return HTMLResponse(content=WELCOME_TEMPLATE.format(file_links=file_links))
 
-@app.get("/{file_name}", response_class=HTMLResponse)
-async def get_player(file_name: str):
-    """Serve HTML page with audio player for the requested file"""
-    if file_name not in MP3_FILES:
+@app.get("/{file_id}", response_class=HTMLResponse)
+async def get_player(file_id: str):
+    """Serve HTML page with audio player for the requested file ID"""
+    # Support both numeric IDs and full file names
+    if file_id in NUMERIC_TO_FILE:
+        file_name = NUMERIC_TO_FILE[file_id]
+    elif file_id in MP3_FILES:
+        file_name = file_id
+    else:
         raise HTTPException(status_code=404, detail="File not found")
     
     # Find current index and calculate prev/next files
     current_index = MP3_FILES.index(file_name)
-    prev_file = MP3_FILES[current_index - 1] if current_index > 0 else file_name
-    next_file = MP3_FILES[current_index + 1] if current_index < len(MP3_FILES) - 1 else file_name
+    
+    # Get previous and next numeric IDs
+    prev_numeric = FILE_TO_NUMERIC[MP3_FILES[current_index - 1]] if current_index > 0 else file_id
+    next_numeric = FILE_TO_NUMERIC[MP3_FILES[current_index + 1]] if current_index < len(MP3_FILES) - 1 else file_id
     
     # Disable buttons if at the limits
     prev_disabled = "disabled" if current_index == 0 else ""
@@ -301,13 +313,21 @@ async def get_player(file_name: str):
     html_content = HTML_TEMPLATE.format(
         file_name=file_name,
         file_url=file_url,
-        prev_file=prev_file,
-        next_file=next_file,
+        prev_file=prev_numeric,
+        next_file=next_numeric,
         prev_disabled=prev_disabled,
         next_disabled=next_disabled
     )
     
     return HTMLResponse(content=html_content)
+
+# Support for legacy format URLs - redirect to numeric format
+@app.get("/{file_name}_sau.mp3", response_class=RedirectResponse)
+async def legacy_redirect(file_name: str):
+    """Redirect from legacy format URLs to new numeric format"""
+    if f"{file_name}_sau.mp3" in MP3_FILES:
+        return RedirectResponse(url=f"/{file_name}")
+    raise HTTPException(status_code=404, detail="File not found")
 
 # Error handling middleware
 @app.middleware("http")
